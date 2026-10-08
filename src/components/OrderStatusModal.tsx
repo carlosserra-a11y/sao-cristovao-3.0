@@ -6,6 +6,7 @@ import { Dialog, DialogCloseButton } from './ui/Dialog';
 import { formatBRL } from '../lib/format';
 import { buildWhatsAppLink } from '../lib/config';
 import { formatBrazilianMobile } from '../../shared/phone';
+import { STORE, STORE_ETA_LABEL, STORE_LOCATION } from '../../shared/storeConfig';
 
 interface OrderStatusModalProps {
   order: Order;
@@ -16,7 +17,7 @@ const STEPS = [
   { num: 1, title: 'Pedido Recebido', desc: 'Confirmado na cozinha', icon: CheckCircle2 },
   { num: 2, title: 'Na Chapa a 200°C', desc: 'Criando crosta de Maillard', icon: Flame },
   { num: 3, title: 'Embalando com Cuidado', desc: 'Batatas crocantes e molhos', icon: PackageCheck },
-  { num: 4, title: 'Saiu para Entrega', desc: 'A caminho de Palhoça', icon: Bike },
+  { num: 4, title: 'Saiu para Entrega', desc: `A caminho de ${STORE.city}`, icon: Bike },
 ] as const;
 
 /** Momento (ms após a abertura) em que cada etapa simulada é alcançada. */
@@ -30,7 +31,7 @@ const STEP_MESSAGES: Record<number, string> = {
   1: 'O restaurante confirmou seu pedido e está separando os pães e carnes artesanais.',
   2: 'Seus burgers estão na chapa quente a 200°C com queijo cheddar derretendo no abafador!',
   3: 'Estamos montando a embalagem térmica para que tudo chegue crocante e quentinho.',
-  4: 'O motoboy saiu do restaurante em direção ao seu endereço em Palhoça!',
+  4: `O motoboy saiu do restaurante em direção ao seu endereço em ${STORE.city}!`,
 };
 
 const PAYMENT_LABELS: Record<Order['paymentMethod'], string> = {
@@ -39,7 +40,7 @@ const PAYMENT_LABELS: Record<Order['paymentMethod'], string> = {
   cash: 'Dinheiro',
 };
 
-const CONTACT_MESSAGE = 'Olá, gostaria de saber sobre meu pedido no São Cristóvão Burger';
+const CONTACT_MESSAGE = `Olá, gostaria de saber sobre meu pedido no ${STORE.name}`;
 
 const OrderStatusModal: React.FC<OrderStatusModalProps> = ({ order, onClose }) => {
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -71,7 +72,7 @@ const OrderStatusModal: React.FC<OrderStatusModalProps> = ({ order, onClose }) =
               Acompanhar Pedido
             </h2>
             <p id={descriptionId} className="text-xs text-zinc-400">
-              Previsão de entrega: 35 - 50 minutos • Palhoça - SC
+              Previsão de entrega: {STORE_ETA_LABEL} • {STORE_LOCATION}
             </p>
           </div>
         </div>

@@ -11,6 +11,7 @@ import {
   stripControlChars,
 } from './pricing.ts';
 import { formatBrazilianMobile, normalizeBrazilianMobile } from './phone.ts';
+import { STORE, STORE_ETA_LABEL } from './storeConfig.ts';
 
 /**
  * Pedido: contrato HTTP, validação/precificação e texto do WhatsApp.
@@ -189,7 +190,7 @@ export function formatOrderMessage(orderId: string, order: PricedOrder): string 
   });
 
   return [
-    `🍔 *Novo pedido ${orderId}* — São Cristóvão Burger`,
+    `🍔 *Novo pedido ${orderId}* — ${STORE.name}`,
     '',
     `*Cliente:* ${order.customer.name}`,
     `*WhatsApp:* ${formatBrazilianMobile(order.customer.phone)}`,
@@ -209,8 +210,8 @@ export function formatOrderMessage(orderId: string, order: PricedOrder): string 
 export function formatCustomerConfirmation(orderId: string, order: PricedOrder): string {
   return [
     `Olá, ${order.customer.name.split(' ')[0]}! 🍔`,
-    `Recebemos seu pedido *${orderId}* no São Cristóvão Burger.`,
+    `Recebemos seu pedido *${orderId}* no ${STORE.name}.`,
     `Total: *${brl(order.total)}* (${PAYMENT_LABELS[order.paymentMethod]}).`,
-    'Previsão de entrega: 35 a 50 minutos. Obrigado pela preferência!',
+    `Previsão de entrega: ${STORE_ETA_LABEL}. Obrigado pela preferência!`,
   ].join('\n');
 }

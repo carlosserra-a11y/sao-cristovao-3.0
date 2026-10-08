@@ -91,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = memo(function Navbar({
               className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer"
             >
               <Bot className="w-4 h-4 text-orange-400" aria-hidden="true" />
-              <span>Sommelier IA</span>
+              <span>Atendente IA</span>
             </button>
           </nav>
 
@@ -102,7 +102,7 @@ export const Navbar: React.FC<NavbarProps> = memo(function Navbar({
               onClick={onOpenChat}
               onPointerEnter={onPrefetchChat}
               onFocus={onPrefetchChat}
-              aria-label="Abrir Atendente e Sommelier IA"
+              aria-label="Abrir atendente de pedidos com IA"
               className="h-11 min-w-11 px-2.5 sm:px-3 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <Bot className="w-4 h-4 text-orange-400" aria-hidden="true" />

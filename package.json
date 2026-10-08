@@ -1,7 +1,7 @@
 {
-  "name": "sao-cristovao-burger",
+  "name": "sao-cristovao-3.0",
   "private": true,
-  "version": "0.0.0",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",

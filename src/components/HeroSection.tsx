@@ -2,11 +2,10 @@ import React, { memo } from 'react';
 import { Sparkles, Flame, Layers } from 'lucide-react';
 import { MenuItem } from '../types/burger';
 import { SaoCristovaoLogo } from './SaoCristovaoLogo';
-import { HeroVideo } from './HeroVideo';
 import { STORE_CLOSES_AT, STORE_OPENS_AT } from '../../shared/storeHours';
+import { STORE, STORE_LOCATION, brl } from '../../shared/storeConfig';
 import { MENU_ITEMS } from '../data/menuData';
 import { formatBRL } from '../lib/format';
-import { HERO_VIDEO_POSTER, HERO_VIDEO_SRC } from '../lib/config';
 
 interface HeroSectionProps {
   onOrderBurger: (item: MenuItem) => void;
@@ -41,7 +40,7 @@ export const HeroSection: React.FC<HeroSectionProps> = memo(function HeroSection
                   />
                 </span>
                 <span>
-                  Palhoça - SC •{' '}
+                  {STORE_LOCATION} •{' '}
                   {isOpenStore ? (
                     <span className="text-green-400">Aberto agora até {STORE_CLOSES_AT}</span>
                   ) : (
@@ -69,16 +68,16 @@ export const HeroSection: React.FC<HeroSectionProps> = memo(function HeroSection
 
           <ul className="flex flex-wrap items-center gap-3 text-xs" aria-label="Destaques da loja">
             <li className="px-3.5 py-2 rounded-xl bg-black/70 border border-white/10 flex items-center gap-2 text-zinc-200">
-              <span className="text-amber-400 font-bold">★ 4.7</span>
-              <span>(1.200+ avaliações)</span>
+              <span className="text-amber-400 font-bold">★ {STORE.rating.value.toLocaleString('pt-BR')}</span>
+              <span>({STORE.rating.reviews.toLocaleString('pt-BR')}+ avaliações)</span>
             </li>
             <li className="px-3.5 py-2 rounded-xl bg-black/70 border border-white/10 flex items-center gap-2 text-zinc-200">
               <Flame className="w-4 h-4 text-red-500" aria-hidden="true" />
-              <span>Pedido mínimo R$ 29,90</span>
+              <span>Pedido mínimo {brl(STORE.delivery.minOrder)}</span>
             </li>
             <li className="px-3.5 py-2 rounded-xl bg-black/70 border border-white/10 flex items-center gap-2 text-zinc-200">
               <span className="text-green-400 font-bold">Frete Grátis</span>
-              <span>acima de R$ 75</span>
+              <span>acima de {brl(STORE.delivery.freeAbove)}</span>
             </li>
           </ul>
 
@@ -102,30 +101,16 @@ export const HeroSection: React.FC<HeroSectionProps> = memo(function HeroSection
           </div>
         </div>
 
-        {/* Coluna direita: vídeo do burger (quando configurado) ou espaço aberto para a camada animada. */}
-        <div className="lg:col-span-6 flex flex-col items-center justify-end lg:justify-center relative min-h-[300px] lg:min-h-[420px] pointer-events-none">
-          {HERO_VIDEO_SRC ? (
-            <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.8)] bg-black">
-              <HeroVideo
-                src={`${import.meta.env.BASE_URL}${HERO_VIDEO_SRC}`}
-                poster={HERO_VIDEO_POSTER ? `${import.meta.env.BASE_URL}${HERO_VIDEO_POSTER}` : undefined}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0e]/70 via-transparent to-transparent" />
-            </div>
-          ) : (
-            <div className="p-4 rounded-2xl bg-black/60 border border-white/10 shadow-2xl max-w-xs text-center space-y-1.5 pointer-events-auto lg:translate-y-48">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[10px] font-bold uppercase tracking-wider">
-                <Sparkles className="w-3 h-3 text-amber-400" aria-hidden="true" />
-                <span>Burger em Camadas Interativas</span>
-              </div>
-              <p className="text-[11px] text-zinc-300 leading-snug">
-                <span className="hidden pointer-fine:inline">Mova o cursor para inclinar o burger em 3D. </span>
-                Role a página para destrinchar as camadas.
-              </p>
-            </div>
-          )}
-        </div>
+        {/* Coluna direita: aberta — o burger do vídeo de fundo aparece aqui. */}
+        <div aria-hidden="true" className="hidden lg:block lg:col-span-6 min-h-[420px]" />
+      </div>
+
+      {/* Indicação de rolagem */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-300">
+        <span>Role para desmontar o burger</span>
+        <span className="h-9 w-5 rounded-full border border-white/30 flex justify-center pt-1.5" aria-hidden="true">
+          <span className="h-2 w-1 rounded-full bg-amber-400 animate-bounce" />
+        </span>
       </div>
     </section>
   );

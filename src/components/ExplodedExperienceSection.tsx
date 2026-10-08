@@ -3,8 +3,8 @@ import { Sparkles, Flame, ArrowDown, ShoppingBag } from 'lucide-react';
 import { SaoCristovaoLogo } from './SaoCristovaoLogo';
 
 /**
- * Seção editorial sobre a anatomia do burger. A animação em si vive na camada
- * fixa (BurgerExplosion) — esta seção deixa a coluna central aberta para ela.
+ * Seção editorial sobre a anatomia do burger. O vídeo de fundo (fixo e
+ * controlado pela rolagem) fica visível na coluna central desta seção.
  */
 export const ExplodedExperienceSection: React.FC = () => {
   const [activeLayer, setActiveLayer] = useState<number | null>(null);

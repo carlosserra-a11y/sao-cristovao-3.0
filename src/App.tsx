@@ -9,29 +9,29 @@ import { HeroSection } from './components/HeroSection';
 import { ExplodedExperienceSection } from './components/ExplodedExperienceSection';
 import { MenuSection } from './components/MenuSection';
 import { Footer } from './components/Footer';
+import { AssistantLauncher } from './components/AssistantLauncher';
 import { LazyBoundary, ModalLoadError, ModalLoadingFallback, StaticBackdrop } from './components/ui/LazyBoundary';
 import { useCart } from './hooks/useCart';
 import { useStoreStatus } from './hooks/useStoreStatus';
 import { useIdlePreload } from './hooks/useIdlePreload';
 import { CustomizationOption, MenuItem, Order } from './types/burger';
-import { HERO_VIDEO_SRC } from './lib/config';
 
 // Code splitting: nada disso é necessário para o primeiro paint do cardápio.
 const loadBackground = () => import('./components/BackgroundExperience');
 const loadItemDetail = () => import('./components/ItemDetailModal');
 const loadCartDrawer = () => import('./components/CartDrawer');
 const loadOrderStatus = () => import('./components/OrderStatusModal');
-const loadChat = () => import('./components/GeminiChatModal');
+const loadAssistant = () => import('./components/OrderAssistant');
 const loadStudio = () => import('./components/GeminiImageStudioModal');
 
 const BackgroundExperience = lazy(loadBackground);
 const ItemDetailModal = lazy(loadItemDetail);
 const CartDrawer = lazy(loadCartDrawer);
 const OrderStatusModal = lazy(loadOrderStatus);
-const GeminiChatModal = lazy(loadChat);
+const OrderAssistant = lazy(loadAssistant);
 const GeminiImageStudioModal = lazy(loadStudio);
 
-const IDLE_PRELOADS = [loadItemDetail, loadCartDrawer, loadOrderStatus, loadChat, loadStudio] as const;
+const IDLE_PRELOADS = [loadItemDetail, loadCartDrawer, loadOrderStatus, loadAssistant, loadStudio] as const;
 
 interface ChatState {
   open: boolean;
@@ -77,6 +77,16 @@ export default function App() {
   const closeItemDetail = useCallback(() => setSelectedItemForDetail(null), []);
   const closeOrder = useCallback(() => setActiveOrder(null), []);
 
+  // Atendente → carrinho / detalhes do item.
+  const handleAssistantCheckout = useCallback(() => {
+    setChat(CLOSED_CHAT);
+    setIsCartOpen(true);
+  }, []);
+  const handleAssistantCustomize = useCallback((item: MenuItem) => {
+    setChat(CLOSED_CHAT);
+    setSelectedItemForDetail(item);
+  }, []);
+
   const handleCheckoutSuccess = useCallback(
     (order: Order) => {
       setActiveOrder(order);
@@ -101,10 +111,10 @@ export default function App() {
         Pular para o cardápio
       </a>
 
-      {/* Camada decorativa: brasas + burger explodindo com o scroll (lazy) */}
+      {/* Fundo: vídeo do burger controlado pela rolagem (lazy) */}
       <LazyBoundary errorFallback={<StaticBackdrop />}>
         <Suspense fallback={<StaticBackdrop />}>
-          <BackgroundExperience heroHasVideo={Boolean(HERO_VIDEO_SRC)} />
+          <BackgroundExperience />
         </Suspense>
       </LazyBoundary>
 
@@ -115,7 +125,7 @@ export default function App() {
         onOpenChat={openChat}
         onOpenStudio={openStudio}
         isOpenStore={isOpenStore}
-        onPrefetchChat={loadChat}
+        onPrefetchChat={loadAssistant}
         onPrefetchStudio={loadStudio}
         onPrefetchCart={loadCartDrawer}
       />
@@ -127,6 +137,9 @@ export default function App() {
       </main>
 
       <Footer />
+
+      {/* Atendente de pedidos: botão flutuante sempre à mão */}
+      {!chat.open && <AssistantLauncher onOpen={openChat} onPrefetch={loadAssistant} cartCount={totalItems} />}
 
       {/* Modais: montados somente quando abertos (estado sempre limpo, hooks nunca condicionais). */}
       {selectedItemForDetail &&
@@ -159,7 +172,15 @@ export default function App() {
 
       {chat.open &&
         renderModal(
-          <GeminiChatModal onClose={closeChat} onQuickAddItem={quickAdd} initialQuery={chat.initialQuery} />,
+          <OrderAssistant
+            onClose={closeChat}
+            initialQuery={chat.initialQuery}
+            cart={cart}
+            isOpenStore={isOpenStore}
+            onAddItem={quickAdd}
+            onCustomize={handleAssistantCustomize}
+            onCheckout={handleAssistantCheckout}
+          />,
           closeChat
         )}
 

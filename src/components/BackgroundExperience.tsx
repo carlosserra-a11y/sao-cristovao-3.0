@@ -1,34 +1,10 @@
 import React from 'react';
-import { useReducedMotion } from 'motion/react';
-import BurgerExplosion from './burger/BurgerExplosion';
-import { EmberField } from './EmberField';
-
-interface BackgroundExperienceProps {
-  /** true quando o Hero tem vídeo próprio: o burger animado aparece só depois dele. */
-  heroHasVideo?: boolean;
-}
+import { ScrollVideoBackground } from './ScrollVideoBackground';
 
 /**
- * Camada visual decorativa (carregada via React.lazy no App):
- *  - brasas ambiente (somente sem prefers-reduced-motion);
- *  - burger explodindo conforme o scroll.
- *
- * A `key` força remontagem caso a preferência de movimento mude em tempo de
- * execução, garantindo que todos os MotionValues sejam recriados no modo certo.
+ * Camada visual de fundo (carregada via React.lazy no App): o vídeo do burger
+ * em tela cheia, montado no topo e explodindo conforme a rolagem.
  */
-const BackgroundExperience: React.FC<BackgroundExperienceProps> = ({ heroHasVideo = false }) => {
-  const reduceMotion = useReducedMotion() ?? false;
-
-  return (
-    <>
-      {!reduceMotion && <EmberField />}
-      <BurgerExplosion
-        key={reduceMotion ? 'static' : 'animated'}
-        reduceMotion={reduceMotion}
-        hideInHero={heroHasVideo}
-      />
-    </>
-  );
-};
+const BackgroundExperience: React.FC = () => <ScrollVideoBackground />;
 
 export default BackgroundExperience;

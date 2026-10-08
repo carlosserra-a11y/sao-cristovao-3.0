@@ -10,8 +10,11 @@ interface DialogProps {
   labelledBy: string;
   /** id do texto descritivo (aria-describedby), quando houver. */
   describedBy?: string;
-  /** 'center' = modal centralizado · 'drawer' = painel lateral (carrinho). */
-  variant?: 'center' | 'drawer';
+  /**
+   * 'center' = modal centralizado · 'drawer' = painel lateral (carrinho) ·
+   * 'panel' = chat: tela cheia no celular, janela no canto inferior direito no desktop.
+   */
+  variant?: 'center' | 'drawer' | 'panel';
   panelClassName?: string;
   initialFocusRef?: RefObject<HTMLElement | null>;
   children: ReactNode;
@@ -36,20 +39,30 @@ export const Dialog: React.FC<DialogProps> = ({
   useModal(panelRef, onClose, { initialFocusRef });
 
   const isDrawer = variant === 'drawer';
+  const isPanel = variant === 'panel';
+
+  const containerClass = isDrawer
+    ? 'fixed inset-0 z-50 flex justify-end'
+    : isPanel
+      ? 'fixed inset-0 z-50 flex items-end justify-end sm:p-5'
+      : 'fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto p-3 sm:p-4';
+
+  const initial = reduceMotion
+    ? false
+    : isDrawer
+      ? { x: '100%' }
+      : isPanel
+        ? { opacity: 0, y: 24 }
+        : { opacity: 0, y: 16, scale: 0.98 };
+  const animate = isDrawer ? { x: 0 } : isPanel ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, scale: 1 };
 
   return createPortal(
-    <div
-      className={
-        isDrawer
-          ? 'fixed inset-0 z-50 flex justify-end'
-          : 'fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto p-3 sm:p-4'
-      }
-    >
+    <div className={containerClass}>
       {/* Backdrop: clique fora fecha. Decorativo para leitores de tela. */}
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+        className={`fixed inset-0 ${isPanel ? 'bg-black/50 sm:bg-black/30' : 'bg-black/80 backdrop-blur-sm'}`}
       />
       <motion.div
         ref={panelRef}
@@ -58,8 +71,8 @@ export const Dialog: React.FC<DialogProps> = ({
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
         tabIndex={-1}
-        initial={reduceMotion ? false : isDrawer ? { x: '100%' } : { opacity: 0, y: 16, scale: 0.98 }}
-        animate={isDrawer ? { x: 0 } : { opacity: 1, y: 0, scale: 1 }}
+        initial={initial}
+        animate={animate}
         transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
         className={`relative outline-none ${panelClassName}`}
       >

@@ -1,8 +1,30 @@
-# São Cristóvão Burger — Palhoça/SC
+# São Cristóvão 3.0 — Palhoça/SC
 
-Cardápio digital premium da hamburgueria **São Cristóvão Burger**: smash burgers artesanais, carrinho persistente,
-assistente gastronômico com Gemini, estúdio de imagens com IA e um burger interativo que se desmonta em camadas
-conforme o scroll.
+Cardápio digital premium da hamburgueria **São Cristóvão Burger**: vídeo cinematográfico do burger que se desmonta
+conforme a rolagem, cardápio em abas, **atendente de IA que monta o pedido**, carrinho persistente e envio do pedido
+pelo WhatsApp.
+
+## Novidades da 3.0
+
+- **Hero em vídeo (Higgsfield Seedance 2.0)** em tela cheia, controlado pela rolagem, com tratamento de cor quente,
+  mais nitidez e qualidade de compressão maior; iluminação do site refeita (vinheta suave + brilho dourado).
+- **Cardápio em abas** (Destaques, Hambúrgueres, Combos, Acompanhamentos, Bebidas): uma categoria por vez,
+  filtro "para quantas pessoas" nos combos e busca que mostra quantos resultados há em cada aba.
+  Fotos quebradas do cardápio original substituídas.
+- **Atendente de pedidos** (botão flutuante): entende frases como "quero 2 Cristovão Bacon e uma Coca" ou
+  "combo para casal", adiciona ao carrinho e leva ao checkout. Com servidor + `GEMINI_API_KEY`, quem responde é o
+  Gemini (prompt gerado do cardápio); sem servidor (GitHub Pages), o atendente automático responde sozinho.
+- **Configuração central da loja** em [`shared/storeConfig.ts`](shared/storeConfig.ts): nome, telefone, WhatsApp,
+  bairros, horário, pedido mínimo, taxa e frete grátis — o site inteiro (e o servidor) lê dali.
+
+## Onde editar
+
+| O quê | Arquivo |
+| --- | --- |
+| Dados da loja (horário, entrega, contato) | `shared/storeConfig.ts` |
+| Itens, preços, fotos e categorias do cardápio | `shared/menuData.ts` |
+| Adicionais e preços de personalização | `shared/pricing.ts` |
+| Vídeo do Hero | `public/media/` + `src/lib/config.ts` |
 
 **Stack:** React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · Motion · Express · Google Gemini (`@google/genai`)
 
@@ -20,7 +42,7 @@ npm run dev            # http://localhost:3000 (Express + Vite com HMR)
 | --- | --- |
 | `npm run dev` | Servidor Express + Vite em modo middleware |
 | `npm run lint` | Checagem de tipos (`tsc --noEmit`) do frontend, backend, código compartilhado e testes |
-| `npm test` | Testes automatizados (`node:test`): telefone, horário, pedidos e API com Twilio simulada |
+| `npm test` | Testes automatizados (`node:test`): atendente, telefone, horário, pedidos e API com Twilio simulada |
 | `npm run build` | Build de produção do frontend em `dist/` |
 | `NODE_ENV=production npm start` | Serve `dist/` + API com CSP e cache de produção |
 
@@ -53,18 +75,19 @@ src/
 └── lib/                 pricing, cartStorage, api client, modalManager, format
 ```
 
-### Animação "Exploding Burger"
+### Fundo em vídeo controlado pela rolagem ("Exploding Burger")
 
-- 7 camadas independentes em SVG inline (pão superior, molho, alface, tomate, queijo, hambúrguer, pão inferior).
-  O projeto só tinha fotos "achatadas", então cada ingrediente foi desenhado como vetor: nítido em qualquer
-  tela, sem requisições de rede e sem layout shift.
-- `useScroll` → `useSpring` → `useTransform`: o deslocamento de cada camada é função direta do progresso do scroll
-  (0% montado → 100% explodido), totalmente reversível e sem loop autônomo.
-- Nenhum `setState` durante o scroll: só MotionValues escrevendo `transform`/`opacity` (GPU).
-- Responsivo: o espaçamento é calculado pela altura real do palco e da viewport (o burger explodido sempre cabe na
-  tela), com fator menor em tablet e mobile.
-- `prefers-reduced-motion`: burger estático, sem brasas e sem inclinação; o CSS global também neutraliza animações.
-- Camada decorativa: `aria-hidden`, `pointer-events: none` e carregada via `React.lazy`.
+- Vídeo gerado com **Higgsfield Seedance 2.0** (720p, 16:9, sem áudio). Usamos o trecho
+  "burger montado → explodido", recodificado com quadro-chave em todos os frames (all-intra, 60 fps)
+  para que a busca seja instantânea: `public/media/hero-scroll-720.mp4` (desktop) e
+  `hero-scroll-480.mp4` (celular), mais `hero-poster.jpg` (burger montado).
+- O vídeo fica fixo em tela cheia e a **rolagem controla o tempo**: topo = montado; rolando até o
+  cardápio = totalmente explodido; rolando para cima = remonta. Sem loop autônomo.
+- `useScroll` → `useSpring` → `video.currentTime`, sem setState durante a rolagem e com no máximo uma
+  busca pendente (evento `seeked`).
+- Desktop: o burger começa na coluna direita do Hero e desliza para o centro; atrás do cardápio ele
+  esmaece para não competir com os cards. Gradientes garantem legibilidade do texto.
+- `prefers-reduced-motion` ou "economia de dados": exibe apenas a imagem estática (burger montado).
 
 ### API
 
@@ -117,13 +140,6 @@ WhatsApp (link `wa.me`), usando `VITE_STORE_WHATSAPP_NUMBER`.
 **GitHub Pages:** em *Settings → Secrets and variables → Actions → Variables*, crie
 `STORE_WHATSAPP_NUMBER` (ex.: `5548999999999`, só dígitos) e, opcionalmente, `API_BASE_URL`,
 `HERO_VIDEO_SRC` e `HERO_VIDEO_POSTER`. O próximo deploy já usa os valores.
-
-### Vídeo do Hero
-
-O vídeo do burger explodindo (gerado com Higgsfield Seedance 2.0 — 720p, 16:9, 5s, sem áudio) está em
-`public/media/hero-burger.mp4` e é usado por padrão. Para trocar, substitua o arquivo ou defina
-`VITE_HERO_VIDEO_SRC` (use `none` para desativar). O vídeo usa `autoplay muted loop playsinline`, pausa fora da
-tela e respeita `prefers-reduced-motion`. Com vídeo ativo, o burger animado aparece só após o Hero.
 
 ### Segurança
 

@@ -10,9 +10,12 @@
  *  - Exatamente 23:30:00 → FECHADO.
  */
 
-export const STORE_TIMEZONE = 'America/Sao_Paulo';
-export const STORE_OPENS_AT = '18:00';
-export const STORE_CLOSES_AT = '23:30';
+import { STORE } from './storeConfig.ts';
+
+// Valores vêm de shared/storeConfig.ts (configuração única da loja).
+export const STORE_TIMEZONE = STORE.hours.timezone;
+export const STORE_OPENS_AT = STORE.hours.opensAt;
+export const STORE_CLOSES_AT = STORE.hours.closesAt;
 
 export interface StoreStatus {
   isOpen: boolean;

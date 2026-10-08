@@ -1,99 +1,134 @@
 import React from 'react';
-import { MapPin, Clock, Phone, Instagram, Facebook, Heart } from 'lucide-react';
+import { MapPin, Clock, Phone, Instagram, Facebook, MessageCircle, Bike, CreditCard } from 'lucide-react';
 import { SaoCristovaoLogo } from './SaoCristovaoLogo';
-import { STORE_CLOSES_AT, STORE_OPENS_AT } from '../../shared/storeHours';
+import { CATEGORIES, MENU_ITEMS } from '../data/menuData';
+import { buildWhatsAppLink } from '../lib/config';
+import {
+  STORE,
+  STORE_ETA_LABEL,
+  STORE_HOURS_LABEL,
+  STORE_LOCATION,
+  STORE_NEIGHBORHOODS_LABEL,
+  brl,
+} from '../../shared/storeConfig';
+
+// Só categorias que têm itens (Sobremesas fica oculta enquanto não houver produtos).
+const FOOTER_CATEGORIES = CATEGORIES.filter((c) => MENU_ITEMS.some((i) => i.category === c));
+
+const headingClass = 'font-bold text-white uppercase tracking-wider text-xs font-sans';
 
 export const Footer: React.FC = () => {
+  const socials = [
+    { url: STORE.instagramUrl, label: 'Instagram', Icon: Instagram },
+    { url: STORE.facebookUrl, label: 'Facebook', Icon: Facebook },
+  ].filter((s) => s.url);
+
   return (
-    <footer className="relative z-20 bg-black border-t border-white/10 text-zinc-400 text-xs py-14">
+    <footer className="relative z-20 bg-black border-t border-white/10 text-zinc-300 text-xs py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand Info */}
-          <div className="space-y-4 md:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Marca */}
+          <div className="space-y-4">
             <div className="flex items-center gap-3">
               <SaoCristovaoLogo size={52} alt="" />
               <div className="flex flex-col">
                 <span className="font-extrabold text-base text-white uppercase tracking-tight font-display">
-                  São Cristóvão
+                  {STORE.shortName}
                 </span>
-                <span className="text-[10px] tracking-wider font-bold text-amber-400 uppercase">
-                  Hamburgueria
-                </span>
+                <span className="text-[11px] tracking-wider font-bold text-amber-400 uppercase">{STORE.kind}</span>
               </div>
             </div>
-            <p className="text-zinc-400 text-xs leading-relaxed">
-              Smash burgers artesanais na chapa a 200°C com crosta de Maillard e blend Angus fresco selecionado. O sabor autêntico de Palhoça.
-            </p>
-            <div className="flex items-center gap-3 text-zinc-300 pt-1">
-              <a href="#" aria-label="Instagram do São Cristóvão Burger" className="p-3 rounded-lg bg-white/5 hover:bg-amber-400 hover:text-black transition-colors">
-                <Instagram className="w-4 h-4" aria-hidden="true" />
-              </a>
-              <a href="#" aria-label="Facebook do São Cristóvão Burger" className="p-3 rounded-lg bg-white/5 hover:bg-amber-400 hover:text-black transition-colors">
-                <Facebook className="w-4 h-4" aria-hidden="true" />
-              </a>
-            </div>
+            <p className="text-zinc-300 leading-relaxed">{STORE.slogan}</p>
+            <a
+              href={buildWhatsAppLink(`Olá! Vim pelo site do ${STORE.name}.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-400 text-black font-bold transition-colors"
+            >
+              <MessageCircle className="w-4 h-4" aria-hidden="true" />
+              Pedir pelo WhatsApp
+              <span className="sr-only">(abre em nova aba)</span>
+            </a>
+            {socials.length > 0 && (
+              <div className="flex items-center gap-3 pt-1">
+                {socials.map(({ url, label, Icon }) => (
+                  <a
+                    key={label}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${label} do ${STORE.name} (abre em nova aba)`}
+                    className="p-3 rounded-lg bg-white/5 hover:bg-amber-400 hover:text-black transition-colors"
+                  >
+                    <Icon className="w-4 h-4" aria-hidden="true" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Delivery & Address */}
+          {/* Funcionamento e entrega */}
           <div className="space-y-3">
-            <h2 className="font-bold text-white uppercase tracking-wider text-xs font-sans">
-              Localização & Entregas
-            </h2>
-            <div className="space-y-2 text-zinc-400">
-              <div className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <span>Palhoça - Santa Catarina (Pagani, Pedra Branca, Centro, Ponte do Imaruim e região)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Todos os dias, das {STORE_OPENS_AT} às {STORE_CLOSES_AT}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>(48) 99999-9999</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Cardápio Rápido */}
-          <div className="space-y-3">
-            <h2 className="font-bold text-white uppercase tracking-wider text-xs font-sans">
-              Categorias em Destaque
-            </h2>
-            <ul className="space-y-1.5 text-zinc-400">
-              <li><a href="#cardapio" className="hover:text-amber-400 transition-colors">Destaques & Mais Vendidos</a></li>
-              <li><a href="#cardapio" className="hover:text-amber-400 transition-colors">Baratíssimos do São Cristóvão</a></li>
-              <li><a href="#cardapio" className="hover:text-amber-400 transition-colors">Combos para 2 Pessoas</a></li>
-              <li><a href="#cardapio" className="hover:text-amber-400 transition-colors">Box Experiência Nutella</a></li>
-              <li><a href="#cardapio" className="hover:text-amber-400 transition-colors">Molhos Artesanais & Bebidas</a></li>
+            <h2 className={headingClass}>Funcionamento & Entrega</h2>
+            <ul className="space-y-2.5">
+              <li className="flex items-start gap-2">
+                <Clock className="w-4 h-4 text-amber-400 shrink-0 mt-px" aria-hidden="true" />
+                <span>{STORE_HOURS_LABEL}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-amber-400 shrink-0 mt-px" aria-hidden="true" />
+                <span>
+                  {STORE_LOCATION} — {STORE_NEIGHBORHOODS_LABEL}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Bike className="w-4 h-4 text-amber-400 shrink-0 mt-px" aria-hidden="true" />
+                <span>
+                  Entrega em {STORE_ETA_LABEL} · taxa {brl(STORE.delivery.fee)} · grátis acima de{' '}
+                  {brl(STORE.delivery.freeAbove)}
+                </span>
+              </li>
             </ul>
           </div>
 
-          {/* Informações Regulamentares & iFood */}
+          {/* Cardápio */}
+          <nav aria-label="Categorias do cardápio (rodapé)" className="space-y-3">
+            <h2 className={headingClass}>Cardápio</h2>
+            <ul className="space-y-2">
+              {FOOTER_CATEGORIES.map((category) => (
+                <li key={category}>
+                  <a href="#cardapio" className="hover:text-amber-400 transition-colors">
+                    {category}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Atendimento */}
           <div className="space-y-3">
-            <h2 className="font-bold text-white uppercase tracking-wider text-xs font-sans">
-              Institucional & iFood
-            </h2>
-            <ul className="space-y-1.5 text-zinc-400">
-              <li><a href="#" className="hover:text-amber-400 transition-colors">Site Institucional</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition-colors">Termos e Condições de Uso</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition-colors">Código de Conduta</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition-colors">Privacidade e Dicas de Segurança</a></li>
-              <li><span className="text-zinc-400">CNPJ 14.380.200/0001-21</span></li>
+            <h2 className={headingClass}>Atendimento</h2>
+            <ul className="space-y-2.5">
+              <li className="flex items-start gap-2">
+                <Phone className="w-4 h-4 text-amber-400 shrink-0 mt-px" aria-hidden="true" />
+                <span>{STORE.phoneDisplay}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CreditCard className="w-4 h-4 text-amber-400 shrink-0 mt-px" aria-hidden="true" />
+                <span>
+                  Pix, cartão ou dinheiro na entrega · pedido mínimo {brl(STORE.delivery.minOrder)}
+                </span>
+              </li>
+              <li className="text-zinc-400">CNPJ {STORE.cnpj}</li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom copyright */}
-        <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-400 text-[11px]">
-          <div>
-            © 2026 São Cristóvão Burger • Palhoça - SC. Todos os direitos reservados.
-          </div>
-          <div className="flex items-center gap-1">
-            <span>Desenvolvido com</span>
-            <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 inline" />
-            <span>para amantes de smash burger.</span>
-          </div>
+        <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-400 text-[11px]">
+          <p>
+            © {new Date().getFullYear()} {STORE.name} • {STORE_LOCATION}. Todos os direitos reservados.
+          </p>
+          <p>Feito com carinho para amantes de smash burger.</p>
         </div>
       </div>
     </footer>

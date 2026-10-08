@@ -24,6 +24,7 @@ import { formatBRL } from '../lib/format';
 import { MIN_ORDER_VALUE, describeCustomization, getDeliveryFee, roundMoney } from '../lib/pricing';
 import { STORE_OPENS_AT } from '../../shared/storeHours';
 import { ORDER_LIMITS } from '../../shared/order';
+import { STORE, STORE_LOCATION, brl } from '../../shared/storeConfig';
 import { CheckoutForm, FieldErrors, useCheckout, validateCheckoutFields } from '../hooks/useCheckout';
 
 interface CartDrawerProps {
@@ -165,7 +166,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
             <h2 id={titleId} className="font-extrabold text-base text-white uppercase font-display leading-tight">
               Seu Carrinho
             </h2>
-            <span className="text-[11px] text-amber-400 font-semibold uppercase">São Cristóvão Hamburgueria</span>
+            <span className="text-[11px] text-amber-400 font-semibold uppercase">{STORE.shortName} {STORE.kind}</span>
           </div>
         </div>
         <DialogCloseButton onClose={onClose} label="Fechar carrinho" />
@@ -345,7 +346,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
 
               <Field
                 id={`${idPrefix}-address`}
-                label="Endereço (Palhoça - SC)"
+                label={`Endereço (${STORE_LOCATION})`}
                 icon={<MapPin className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />}
                 error={fieldErrors.address}
                 hint="Rua, número, bairro e complemento."
@@ -358,7 +359,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                     autoComplete="street-address"
                     maxLength={ORDER_LIMITS.addressMax}
                     onChange={(e) => update('address', e.target.value)}
-                    placeholder="Ex.: Rua das Flores, 123 - Pagani"
+                    placeholder={`Ex.: Rua das Flores, 123 - ${STORE.neighborhoods[0]}`}
                     className={inputClass}
                   />
                 )}
@@ -418,9 +419,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                 <dd className="text-white font-mono">{formatBRL(subtotal)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt>Entrega (Palhoça)</dt>
+                <dt>Entrega ({STORE.city})</dt>
                 <dd className={deliveryFee === 0 ? 'text-green-400 font-bold' : 'text-white font-mono'}>
-                  {deliveryFee === 0 ? 'Grátis (acima de R$ 75)' : formatBRL(deliveryFee)}
+                  {deliveryFee === 0 ? `Grátis (acima de ${brl(STORE.delivery.freeAbove)})` : formatBRL(deliveryFee)}
                 </dd>
               </div>
               <div className="flex justify-between text-base font-extrabold text-white pt-2 border-t border-white/10">

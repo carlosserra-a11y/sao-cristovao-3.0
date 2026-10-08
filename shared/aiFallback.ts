@@ -1,75 +1,22 @@
 import type { ChatMessageInput, ChatRoleMode } from './api.ts';
+import { respond } from './orderAssistant.ts';
+
+/**
+ * Respostas de contingência quando o Gemini está indisponível.
+ * Compartilhado: o servidor usa quando o provedor falha, e o navegador usa
+ * quando não há backend (ex.: versão estática publicada no GitHub Pages).
+ * O texto vem do mesmo motor do atendente de pedidos (shared/orderAssistant.ts),
+ * então preços, horários e itens estão sempre de acordo com o cardápio.
+ */
 
 export interface FallbackImage {
   imageUrl: string;
   description: string;
 }
 
-/**
- * Respostas de contingência usadas quando o Gemini está indisponível.
- * Compartilhado: o servidor usa quando o provedor falha, e o navegador usa
- * quando não há backend (ex.: versão estática publicada no GitHub Pages).
- * Antes eram dezenas de `if (lastUserMsg.includes(...))` dentro da rota;
- * agora são regras declarativas, avaliadas em ordem (a primeira que casar vence).
- */
-
-interface FallbackContext {
-  /** Última mensagem do usuário, minúscula e sem acentos ("horário" → "horario"). */
-  text: string;
-  role: ChatRoleMode;
-}
-
-interface ChatFallbackRule {
-  id: string;
-  matches: (ctx: FallbackContext) => boolean;
-  reply: string;
-}
-
-const normalize = (text: string) =>
-  text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-
-const hasAny = (text: string, keywords: readonly string[]) => keywords.some((k) => text.includes(k));
-
-const CHAT_FALLBACK_RULES: readonly ChatFallbackRule[] = [
-  {
-    id: 'couple',
-    matches: ({ text }) => hasAny(text, ['casal', '2 pessoas', 'duas pessoas', 'dois']),
-    reply:
-      'Para 2 pessoas, recomendo muito o **Combo: 2 Burgers (Big + Classic) + Fritas + 2 Coca-Cola 200ml (R$ 80,40)**! Vem com 1 Big Burger duplo com bacon e cebola caramelizada, 1 Classic macio e porção caprichada de batatas palito crocantes. Outra opção maravilhosa é o **Combo 2x Cristovão Bacon (R$ 86,40)**.',
-  },
-  {
-    id: 'ribs',
-    matches: ({ text }) => text.includes('costela'),
-    reply:
-      'Se você ama costela, o nosso campeão absoluto é o **Burguer Duplo + Costela - Cristovão Angus Perfeito (R$ 56,90)**! São 2 hambúrgueres Angus de 120g combinados com 80g de costela bovina desfiada marinada, cheddar derretido e maionese caseira. No combo com fritas e Coca sai por R$ 65,90!',
-  },
-  {
-    id: 'bacon',
-    matches: ({ text }) => text.includes('bacon'),
-    reply:
-      'O nosso queridinho é o **Burger 120g Bacon & Cheddar Cristovão Bacon (R$ 48,90)**. Pão brioche tostado na manteiga, queijo cheddar derretido no abafador, alface fresca e fatias generosas de bacon estaladiço!',
-  },
-  {
-    id: 'hours-delivery',
-    matches: ({ text }) => hasAny(text, ['horario', 'abre', 'fecha', 'aberto', 'entrega', 'delivery']),
-    reply:
-      'O São Cristóvão Burger abre todos os dias das **18:00 às 23:30**. Entregamos em toda Palhoça - SC (Pagani, Pedra Branca, Centro, Ponte do Imaruim, Passa Vinte, etc.) com pedido mínimo de apenas **R$ 29,90**!',
-  },
-  {
-    id: 'technique',
-    matches: ({ text, role }) => role === 'expert' || hasAny(text, ['crosta', 'maillard', 'smash']),
-    reply:
-      'A técnica do nosso Smash Burger consiste em prensar uma bola de carne Angus 100% fresca diretamente contra a chapa a mais de 200°C. Essa alta temperatura provoca a reação de Maillard instantânea: os aminoácidos e açúcares caramelizam, criando aquela crostinha dourada e crocante na borda enquanto preserva a suculência interna da carne!',
-  },
-];
-
-const DEFAULT_CHAT_REPLY =
-  'Olá! Aqui no São Cristóvão Burger em Palhoça temos os melhores smash burgers artesanais da região! Nossos destaques hoje são o **Cristovão Bacon 120g (R$ 48,90)**, o **Cristovão Turbo Pickles (R$ 51,90)** e os **Combos para 2 pessoas a partir de R$ 80,40**. Qual tipo de lanche você prefere hoje?';
-
-export function buildChatFallback(messages: readonly ChatMessageInput[], role: ChatRoleMode): string {
+export function buildChatFallback(messages: readonly ChatMessageInput[], _role: ChatRoleMode): string {
   const lastUser = [...messages].reverse().find((m) => m.role === 'user');
-  const ctx: FallbackContext = { text: normalize(lastUser?.content ?? ''), role };
-  return CHAT_FALLBACK_RULES.find((rule) => rule.matches(ctx))?.reply ?? DEFAULT_CHAT_REPLY;
+  return respond(lastUser?.content ?? '').text;
 }
 
 // Acervo de fotos gastronômicas (mesmo padrão visual) para o estúdio de imagens.

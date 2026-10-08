@@ -42,15 +42,22 @@ export function useCart() {
     []
   );
 
-  /** "Adicionar" rápido: soma ao item sem personalização, ou cria nova linha. */
-  const quickAdd = useCallback((item: MenuItem) => {
+  /**
+   * "Adicionar" rápido (cardápio e atendente): soma ao item sem personalização
+   * ou cria nova linha. `amount` permite "quero 2 cocas" de uma vez.
+   */
+  const quickAdd = useCallback((item: MenuItem, amount = 1) => {
+    const safeAmount = Math.min(MAX_ITEM_QUANTITY, Math.max(1, Math.floor(amount)));
     setCart((prev) => {
       const idx = prev.findIndex((ci) => ci.item.id === item.id && isPlainCustomization(ci.customization));
       if (idx === -1) {
-        return [...prev, { id: createId(item.id), item, quantity: 1, totalPrice: item.price }];
+        return [
+          ...prev,
+          { id: createId(item.id), item, quantity: safeAmount, totalPrice: roundMoney(item.price * safeAmount) },
+        ];
       }
       const existing = prev[idx];
-      const quantity = Math.min(MAX_ITEM_QUANTITY, existing.quantity + 1);
+      const quantity = Math.min(MAX_ITEM_QUANTITY, existing.quantity + safeAmount);
       const next = [...prev];
       next[idx] = { ...existing, quantity, totalPrice: roundMoney(getUnitPrice(item) * quantity) };
       return next;
