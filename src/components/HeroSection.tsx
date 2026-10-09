@@ -106,7 +106,7 @@ export const HeroSection: React.FC<HeroSectionProps> = memo(function HeroSection
       </div>
 
       {/* Indicação de rolagem */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-300">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-300">
         <span>Role para desmontar o burger</span>
         <span className="h-9 w-5 rounded-full border border-white/30 flex justify-center pt-1.5" aria-hidden="true">
           <span className="h-2 w-1 rounded-full bg-amber-400 animate-bounce" />

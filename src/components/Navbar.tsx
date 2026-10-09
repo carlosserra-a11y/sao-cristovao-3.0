@@ -42,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = memo(function Navbar({
             </a>
             <div className="hidden min-[400px]:flex flex-col min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-base sm:text-xl tracking-tight uppercase text-white font-display truncate">
+                <span className="font-extrabold text-[15px] sm:text-xl tracking-tight uppercase text-white font-display whitespace-nowrap">
                   São Cristóvão
                 </span>
                 <span className="hidden lg:inline px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-400 text-black uppercase">
@@ -103,7 +103,7 @@ export const Navbar: React.FC<NavbarProps> = memo(function Navbar({
               onPointerEnter={onPrefetchChat}
               onFocus={onPrefetchChat}
               aria-label="Abrir atendente de pedidos com IA"
-              className="h-11 min-w-11 px-2.5 sm:px-3 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              className="hidden sm:flex h-11 min-w-11 px-2.5 sm:px-3 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-300 font-bold text-xs items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <Bot className="w-4 h-4 text-orange-400" aria-hidden="true" />
               <span className="hidden sm:inline xl:hidden">Atendente IA</span>

@@ -6,7 +6,7 @@ pelo WhatsApp.
 
 ## Novidades da 3.0
 
-- **Hero em vídeo (Higgsfield Seedance 2.0)** em tela cheia, controlado pela rolagem, com tratamento de cor quente,
+- **Hero com o burger (Higgsfield Seedance 2.0)** em tela cheia, controlado pela rolagem (sequência de quadros em canvas, funciona no iPhone), com tratamento de cor quente,
   mais nitidez e qualidade de compressão maior; iluminação do site refeita (vinheta suave + brilho dourado).
 - **Cardápio em abas** (Destaques, Hambúrgueres, Combos, Acompanhamentos, Bebidas): uma categoria por vez,
   filtro "para quantas pessoas" nos combos e busca que mostra quantos resultados há em cada aba.
@@ -24,7 +24,7 @@ pelo WhatsApp.
 | Dados da loja (horário, entrega, contato) | `shared/storeConfig.ts` |
 | Itens, preços, fotos e categorias do cardápio | `shared/menuData.ts` |
 | Adicionais e preços de personalização | `shared/pricing.ts` |
-| Vídeo do Hero | `public/media/` + `src/lib/config.ts` |
+| Quadros do Hero | `public/media/frames/` + `src/lib/config.ts` |
 
 **Stack:** React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · Motion · Express · Google Gemini (`@google/genai`)
 
@@ -75,19 +75,26 @@ src/
 └── lib/                 pricing, cartStorage, api client, modalManager, format
 ```
 
-### Fundo em vídeo controlado pela rolagem ("Exploding Burger")
+### Fundo controlado pela rolagem ("Exploding Burger")
 
-- Vídeo gerado com **Higgsfield Seedance 2.0** (720p, 16:9, sem áudio). Usamos o trecho
-  "burger montado → explodido", recodificado com quadro-chave em todos os frames (all-intra, 60 fps)
-  para que a busca seja instantânea: `public/media/hero-scroll-720.mp4` (desktop) e
-  `hero-scroll-480.mp4` (celular), mais `hero-poster.jpg` (burger montado).
-- O vídeo fica fixo em tela cheia e a **rolagem controla o tempo**: topo = montado; rolando até o
-  cardápio = totalmente explodido; rolando para cima = remonta. Sem loop autônomo.
-- `useScroll` → `useSpring` → `video.currentTime`, sem setState durante a rolagem e com no máximo uma
-  busca pendente (evento `seeked`).
+- Vídeo gerado com **Higgsfield Seedance 2.0** (720p, 16:9, sem áudio), tratado em cor/nitidez e
+  convertido em **sequência de quadros WebP**, desenhada num `<canvas>` fixo em tela cheia
+  (`src/components/ScrollSequenceBackground.tsx`):
+  - desktop: 40 quadros 1280×720 (~2 MB) em `public/media/frames/desktop/`;
+  - celular: 36 quadros 560×560 recortados no centro (~1,1 MB) em `public/media/frames/mobile/`,
+    para o burger caber inteiro numa tela vertical.
+- **Por que quadros e não `<video>`?** O Safari do iPhone não exibe um vídeo pausado que é "pulado"
+  pela rolagem (e bloqueia vídeo em modo Pouca Energia). Imagens num canvas funcionam igual em qualquer
+  navegador, inclusive iOS.
+- A **rolagem escolhe o quadro**: topo = montado; rolando até o cardápio = totalmente explodido;
+  rolando para cima = remonta. Sem loop autônomo, sem setState durante a rolagem: o progresso
+  (`useScroll` → `useSpring`) só agenda um desenho por quadro de tela e quadros vizinhos são misturados
+  com alfa (animação fluida com poucos quadros).
+- Os quadros carregam por prioridade (primeiro, último e depois refinando), então o burger aparece
+  na hora. A altura usa `100lvh`, estável quando a barra do Safari recolhe.
 - Desktop: o burger começa na coluna direita do Hero e desliza para o centro; atrás do cardápio ele
-  esmaece para não competir com os cards. Gradientes garantem legibilidade do texto.
-- `prefers-reduced-motion` ou "economia de dados": exibe apenas a imagem estática (burger montado).
+  esmaece. Celular: burger mais discreto no Hero (muito texto) e pleno depois.
+- `prefers-reduced-motion` ou "economia de dados": exibe apenas o primeiro quadro (burger montado).
 
 ### API
 
