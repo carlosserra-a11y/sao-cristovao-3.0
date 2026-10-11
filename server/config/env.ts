@@ -39,6 +39,12 @@ export const env = Object.freeze({
   chatTimeoutMs: parseNumber(process.env.AI_CHAT_TIMEOUT_MS, 30_000),
   imageTimeoutMs: parseNumber(process.env.AI_IMAGE_TIMEOUT_MS, 90_000),
   trustProxy: parseTrustProxy(process.env.TRUST_PROXY, isProd),
+  /**
+   * Pedidos diretos pelo site (POST /api/orders → WhatsApp/Twilio). DESLIGADO por padrão:
+   * a loja recebe pedidos pelo iFood, então a rota nem é montada (menos superfície de ataque
+   * e nenhum dado pessoal de clientes passando pelo nosso servidor).
+   */
+  directOrders: parseBoolean(process.env.ENABLE_DIRECT_ORDERS, false),
   /** Origens autorizadas a embutir o site em iframe (ex.: preview do AI Studio). */
   frameAncestors: (process.env.FRAME_ANCESTORS ?? '')
     .split(/[\s,]+/)

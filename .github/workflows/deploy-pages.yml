@@ -30,6 +30,9 @@ jobs:
 
       - run: npm ci
 
+      # Falha o deploy se houver dependência de produção com vulnerabilidade alta/crítica conhecida.
+      - run: npm audit --omit=dev --audit-level=high
+
       - run: npm run lint
 
       - run: npm test
@@ -42,6 +45,8 @@ jobs:
           # Configuráveis em Settings → Secrets and variables → Actions → Variables
           # (valores públicos: vão para o site; nunca coloque segredos aqui).
           VITE_STORE_WHATSAPP_NUMBER: ${{ vars.STORE_WHATSAPP_NUMBER }}
+          # Link da loja no iFood (https://www.ifood.com.br/delivery/...). Só aceita domínios do iFood.
+          VITE_IFOOD_URL: ${{ vars.IFOOD_URL }}
           VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
 
       - uses: actions/upload-pages-artifact@v3

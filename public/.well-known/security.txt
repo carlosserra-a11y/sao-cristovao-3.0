@@ -1,0 +1,4 @@
+# Para reportar uma vulnerabilidade neste site, use o relato privado do GitHub (não abra issue pública):
+Contact: https://github.com/carlosserra-a11y/sao-cristovao-3.0/security/advisories/new
+Expires: 2027-10-11T00:00:00.000Z
+Preferred-Languages: pt, en

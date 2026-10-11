@@ -26,12 +26,20 @@ export const STORE = {
   neighborhoods: ['Pagani', 'Pedra Branca', 'Centro', 'Ponte do Imaruim', 'Passa Vinte'],
 
   /** Contato */
-  phoneDisplay: '(48) 99999-9999',
+  phoneDisplay: '(48) 99617-0281',
   /** WhatsApp da loja: só dígitos, com DDI 55 (pode ser sobrescrito por VITE_STORE_WHATSAPP_NUMBER). */
-  whatsapp: '5548999999999',
+  whatsapp: '5548996170281',
   instagramUrl: '',
   facebookUrl: '',
   cnpj: '14.380.200/0001-21',
+  /** E-mail para pedidos de titulares (LGPD). Opcional: se vazio, usamos telefone/WhatsApp. */
+  privacyEmail: '',
+
+  /**
+   * Link da loja no iFood (https://www.ifood.com.br/delivery/...). Os pedidos são feitos lá.
+   * Só aceita domínios do iFood (ver shared/ifood.ts). Também pode vir de VITE_IFOOD_URL.
+   */
+  ifoodUrl: 'https://www.ifood.com.br/delivery/palhoca-sc/sao-cristovao-burger-centro/bea98912-48d7-4dac-8003-e911250453a6',
 
   /** Reputação exibida no site */
   rating: { value: 4.7, reviews: 1200 },

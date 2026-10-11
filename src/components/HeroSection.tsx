@@ -1,21 +1,15 @@
 import React, { memo } from 'react';
-import { Sparkles, Flame, Layers } from 'lucide-react';
-import { MenuItem } from '../types/burger';
+import { ExternalLink, Bike, Layers } from 'lucide-react';
 import { SaoCristovaoLogo } from './SaoCristovaoLogo';
 import { STORE_CLOSES_AT, STORE_OPENS_AT } from '../../shared/storeHours';
-import { STORE, STORE_LOCATION, brl } from '../../shared/storeConfig';
-import { MENU_ITEMS } from '../data/menuData';
-import { formatBRL } from '../lib/format';
+import { STORE, STORE_LOCATION } from '../../shared/storeConfig';
+import { IFOOD_URL } from '../lib/config';
 
 interface HeroSectionProps {
-  onOrderBurger: (item: MenuItem) => void;
   isOpenStore: boolean;
 }
 
-// Usa o item real do cardápio (antes era uma cópia fixa com descrição divergente).
-const SIGNATURE_BURGER = MENU_ITEMS.find((item) => item.id === 'destaque-1') ?? MENU_ITEMS[0];
-
-export const HeroSection: React.FC<HeroSectionProps> = memo(function HeroSection({ onOrderBurger, isOpenStore }) {
+export const HeroSection: React.FC<HeroSectionProps> = memo(function HeroSection({ isOpenStore }) {
   return (
     <section
       id="inicio"
@@ -72,24 +66,22 @@ export const HeroSection: React.FC<HeroSectionProps> = memo(function HeroSection
               <span>({STORE.rating.reviews.toLocaleString('pt-BR')}+ avaliações)</span>
             </li>
             <li className="px-3.5 py-2 rounded-xl bg-black/70 border border-white/10 flex items-center gap-2 text-zinc-200">
-              <Flame className="w-4 h-4 text-red-500" aria-hidden="true" />
-              <span>Pedido mínimo {brl(STORE.delivery.minOrder)}</span>
-            </li>
-            <li className="px-3.5 py-2 rounded-xl bg-black/70 border border-white/10 flex items-center gap-2 text-zinc-200">
-              <span className="text-green-400 font-bold">Frete Grátis</span>
-              <span>acima de {brl(STORE.delivery.freeAbove)}</span>
+              <Bike className="w-4 h-4 text-[#EA1D2C]" aria-hidden="true" />
+              <span>Entrega pelo iFood</span>
             </li>
           </ul>
 
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2">
-            <button
-              type="button"
-              onClick={() => onOrderBurger(SIGNATURE_BURGER)}
-              className="px-6 sm:px-8 py-4 rounded-full font-black text-sm uppercase tracking-wider bg-amber-400 hover:bg-amber-300 text-black transition-[background-color,transform] duration-300 shadow-[0_0_25px_rgba(251,191,36,0.4)] hover:scale-105 active:scale-95 flex items-center gap-2.5 cursor-pointer"
+            <a
+              href={IFOOD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 sm:px-8 py-4 rounded-full font-black text-sm uppercase tracking-wider bg-[#EA1D2C] hover:bg-[#d11a28] text-white transition-[background-color,transform] duration-300 shadow-[0_0_25px_rgba(234,29,44,0.45)] hover:scale-105 active:scale-95 flex items-center gap-2.5 cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-black" aria-hidden="true" />
-              <span>Pedir Cristóvão Bacon • {formatBRL(SIGNATURE_BURGER.price)}</span>
-            </button>
+              <span>Pedir no iFood</span>
+              <ExternalLink className="w-4 h-4" aria-hidden="true" />
+              <span className="sr-only">(abre o iFood em nova aba)</span>
+            </a>
 
             <a
               href="#a-experiencia"

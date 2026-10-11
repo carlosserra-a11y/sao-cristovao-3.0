@@ -15,6 +15,7 @@ const ALLOWED_ORIGIN = 'https://carlosserra-a11y.github.io';
 
 Object.assign(process.env, {
   NODE_ENV: 'test',
+  ENABLE_DIRECT_ORDERS: 'true',
   TWILIO_ACCOUNT_SID: ACCOUNT_SID,
   TWILIO_AUTH_TOKEN: AUTH_TOKEN,
   TWILIO_WHATSAPP_FROM: '+14155238886',

@@ -32,7 +32,7 @@ export async function createApp({ registerFrontend }: CreateAppOptions = {}): Pr
   const api = express.Router();
   api.use(corsPolicy, noStore, apiLimiter);
   api.use('/store', storeRoutes);
-  api.use('/orders', orderRoutes);
+  if (env.directOrders) api.use('/orders', orderRoutes);
   api.use(aiRoutes);
   api.use(apiNotFound);
   app.use('/api', api);

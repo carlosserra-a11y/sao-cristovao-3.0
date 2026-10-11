@@ -1,8 +1,8 @@
 # São Cristóvão 3.0 — Palhoça/SC
 
 Cardápio digital premium da hamburgueria **São Cristóvão Burger**: vídeo cinematográfico do burger que se desmonta
-conforme a rolagem, cardápio em abas, **atendente de IA que monta o pedido**, carrinho persistente e envio do pedido
-pelo WhatsApp.
+conforme a rolagem, cardápio em abas, **atendente de IA que monta o pedido**, carrinho persistente e **pedido finalizado no iFood**
+(canal oficial da loja). Com aviso de cookies (LGPD) e segurança em camadas.
 
 ## Novidades da 3.0
 
@@ -16,6 +16,19 @@ pelo WhatsApp.
   Gemini (prompt gerado do cardápio); sem servidor (GitHub Pages), o atendente automático responde sozinho.
 - **Configuração central da loja** em [`shared/storeConfig.ts`](shared/storeConfig.ts): nome, telefone, WhatsApp,
   bairros, horário, pedido mínimo, taxa e frete grátis — o site inteiro (e o servidor) lê dali.
+
+## Pedidos pelo iFood
+
+A loja atende pelo iFood, então o site é a vitrine: o cliente monta o pedido (carrinho/atendente), copia o resumo e
+toca em **Pedir no iFood**. O site **não coleta nome, telefone, endereço nem pagamento** (menos risco, menos LGPD).
+
+**Configure o link da loja** (obrigatório antes de publicar — hoje os botões levam à página inicial do iFood):
+
+- GitHub Pages: *Settings → Secrets and variables → Actions → Variables* → `IFOOD_URL`
+- Local/servidor: `VITE_IFOOD_URL` no `.env`, ou `ifoodUrl` em [`shared/storeConfig.ts`](shared/storeConfig.ts)
+
+O link é validado ([`shared/ifood.ts`](shared/ifood.ts)): só `https` e domínios do iFood; qualquer outro valor é ignorado.
+O iFood **não aceita carrinho vindo de outro site**, por isso o carrinho vira um resumo copiável.
 
 ## Onde editar
 
@@ -128,7 +141,9 @@ o erro real sempre é logado com `requestId`. Erros de validação e bugs nunca 
 - Busca por nome/ingrediente com debounce e sem acentos ("guarana" encontra "Guaraná").
 - Cards simples (foto, título, descrição, preço); personalização e adicionais abrem no modal.
 
-### Pedidos pelo WhatsApp (Twilio)
+### Pedidos pelo WhatsApp (Twilio) — legado, desligado
+
+> Não é mais usado: os pedidos são feitos no iFood. A rota só existe com `ENABLE_DIRECT_ORDERS=true`.
 
 `POST /api/orders` valida o pedido, **recalcula todos os preços a partir do cardápio** (`shared/order.ts`),
 normaliza o celular para E.164 (`+55DDD9XXXXXXXX`, `shared/phone.ts`) e envia o resumo ao WhatsApp da
@@ -145,10 +160,41 @@ Sem servidor/Twilio (ex.: versão no GitHub Pages), o carrinho envia o mesmo res
 WhatsApp (link `wa.me`), usando `VITE_STORE_WHATSAPP_NUMBER`.
 
 **GitHub Pages:** em *Settings → Secrets and variables → Actions → Variables*, crie
-`STORE_WHATSAPP_NUMBER` (ex.: `5548999999999`, só dígitos) e, opcionalmente, `API_BASE_URL`,
+`STORE_WHATSAPP_NUMBER` (ex.: `5548996170281`, só dígitos) e, opcionalmente, `API_BASE_URL`,
 `HERO_VIDEO_SRC` e `HERO_VIDEO_POSTER`. O próximo deploy já usa os valores.
 
+### Cookies e LGPD
+
+- Banner em [`CookieConsent.tsx`](src/components/CookieConsent.tsx): "Rejeitar não essenciais" e "Aceitar todos" têm o mesmo
+  peso visual, nada vem pré-marcado e a escolha pode ser mudada pelo rodapé (*Preferências de cookies*).
+- Categorias: Necessários (carrinho + a própria escolha), Estatísticas e Marketing. **Hoje não há nenhum rastreador de
+  estatísticas/marketing instalado**; o mecanismo está pronto para quando houver.
+- Escolha com validade de 180 dias e versionada ([`shared/consent.ts`](shared/consent.ts)); retirar um consentimento recarrega a página.
+- **Para adicionar Google Analytics / Meta Pixel:** (1) libere o domínio em [`shared/csp.ts`](shared/csp.ts) (e em `public/_headers`),
+  (2) carregue o script só dentro de `runWhenConsented('analytics', () => { ... })` ([`src/lib/consent.ts`](src/lib/consent.ts)),
+  (3) atualize a tabela em [`LegalDialog.tsx`](src/components/legal/LegalDialog.tsx) e suba `CONSENT_VERSION`.
+- Textos legais (`#privacidade`, `#cookies`, `#termos`) em [`LegalDialog.tsx`](src/components/legal/LegalDialog.tsx): são um
+  **modelo fiel ao que o site faz hoje — peça revisão a um(a) advogado(a)** e preencha `privacyEmail` em `storeConfig.ts`.
+- Fontes hospedadas por nós (`@fontsource-variable`): nenhuma requisição ao Google Fonts.
+  Ainda há fotos do cardápio vindas do Unsplash (citado na política); o ideal é trocá-las por fotos reais da loja em `public/`.
+
 ### Segurança
+
+Defesa em camadas — nenhum site é "inviolável", mas aqui cada camada reduz o estrago se outra falhar:
+
+- **CSP restritiva** ([`shared/csp.ts`](shared/csp.ts)): sem script inline/`eval`, sem scripts de terceiros, sem `<iframe>`/`<object>`,
+  `frame-ancestors 'none'`. Vai por cabeçalho no Express e por `<meta>` no build estático (GitHub Pages).
+- HSTS (1 ano), `X-Content-Type-Options`, COOP/CORP, `Referrer-Policy`, `Permissions-Policy` (câmera, microfone, localização, pagamento… desligados).
+- Pedidos diretos/Twilio **desligados por padrão** (`ENABLE_DIRECT_ORDERS`): a rota nem existe.
+- Arquivos ocultos (`/.env`, `/.git`…) nunca são servidos; timeouts contra conexões lentas (slowloris).
+- Link do iFood validado; `rel="noopener noreferrer"` em links externos.
+- CI: `npm audit` (falha em vulnerabilidade alta), **CodeQL** semanal e Dependabot ([`.github/`](.github)); `security.txt` em `/.well-known/`.
+- Testes de segurança: [`tests/securityHeaders.test.ts`](tests/securityHeaders.test.ts), [`tests/ifood.test.ts`](tests/ifood.test.ts), [`tests/consent.test.ts`](tests/consent.test.ts).
+- **Fora do código (faça você):** ative 2FA no GitHub, *Secret scanning* e *Push protection* (Settings → Code security),
+  proteção da branch `main`, e use HTTPS/domínio próprio com Cloudflare (WAF + proteção DDoS) à frente do site.
+  Nunca coloque chaves em variáveis `VITE_*` (vão para o navegador).
+
+#### Controles já existentes
 
 - `GEMINI_API_KEY` só existe no servidor.
 - Helmet com CSP restritiva em produção; rate limit por IP (geração de imagem é a mais restrita).

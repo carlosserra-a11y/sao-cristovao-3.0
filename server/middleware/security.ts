@@ -2,45 +2,55 @@ import { randomUUID } from 'node:crypto';
 import type { RequestHandler } from 'express';
 import helmet from 'helmet';
 import { env } from '../config/env.ts';
+import { buildCspDirectives } from '../../shared/csp.ts';
+
+/** Recursos do navegador que o site nunca usa: desligados para que nenhum script injetado os acesse. */
+const PERMISSIONS_POLICY = [
+  'accelerometer=()',
+  'autoplay=(self)',
+  'camera=()',
+  'display-capture=()',
+  'geolocation=()',
+  'gyroscope=()',
+  'magnetometer=()',
+  'microphone=()',
+  'midi=()',
+  'payment=()',
+  'usb=()',
+  'interest-cohort=()',
+].join(', ');
 
 /**
  * Headers de segurança via Helmet.
  *
- * - Produção: CSP restritiva, liberando apenas o necessário para o app
- *   (Google Fonts, fotos do Unsplash, imagens data:/blob: geradas pela IA).
+ * - Produção: CSP restritiva definida em shared/csp.ts (a mesma vira <meta> no
+ *   build estático), HSTS por 1 ano, COOP/CORP, Permissions-Policy e
+ *   `frame-ancestors 'none'` (anti-clickjacking) salvo FRAME_ANCESTORS.
  * - Desenvolvimento: CSP desativada porque o Vite injeta scripts inline
  *   (preamble do React Refresh) e usa WebSocket de HMR. Os demais headers
  *   do Helmet continuam ativos.
  * - FRAME_ANCESTORS: permite embutir o app em iframe de origens confiáveis
- *   (ex.: preview do AI Studio). Sem ele, apenas a própria origem.
+ *   (ex.: preview do AI Studio). Sem ele, ninguém pode embutir o site.
  */
 export function securityHeaders(): RequestHandler {
-  const frameAncestors = env.frameAncestors.length > 0 ? ["'self'", ...env.frameAncestors] : ["'self'"];
+  const directives = buildCspDirectives({ frameAncestors: env.frameAncestors });
 
-  return helmet({
-    contentSecurityPolicy: env.isProd
-      ? {
-          useDefaults: true,
-          directives: {
-            'default-src': ["'self'"],
-            'script-src': ["'self'"],
-            'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-            'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
-            'img-src': ["'self'", 'data:', 'blob:', 'https://images.unsplash.com'],
-            'connect-src': ["'self'"],
-            'frame-ancestors': frameAncestors,
-            'object-src': ["'none'"],
-            'base-uri': ["'self'"],
-            'form-action': ["'self'"],
-          },
-        }
-      : false,
+  const helmetHandler = helmet({
+    contentSecurityPolicy: env.isProd ? { useDefaults: false, directives: { ...directives, 'upgrade-insecure-requests': [] } } : false,
     // Necessário para carregar imagens de terceiros (Unsplash) sem CORP.
     crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: { policy: 'same-origin' },
+    crossOriginResourcePolicy: { policy: 'same-origin' },
+    strictTransportSecurity: { maxAge: 31_536_000, includeSubDomains: true },
     // X-Frame-Options não suporta lista de origens; com FRAME_ANCESTORS a CSP assume o controle.
-    frameguard: env.frameAncestors.length > 0 ? false : { action: 'sameorigin' },
+    frameguard: env.frameAncestors.length > 0 ? false : { action: 'deny' },
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   });
+
+  return (req, res, next) => {
+    res.setHeader('Permissions-Policy', PERMISSIONS_POLICY);
+    helmetHandler(req, res, next);
+  };
 }
 
 /** Correlaciona logs e respostas: X-Request-Id em toda requisição. */

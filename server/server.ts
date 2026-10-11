@@ -21,6 +21,22 @@ async function registerFrontend(app: Express): Promise<void> {
     return;
   }
 
+  // Arquivos ocultos (.env, .git...) nunca são servidos — nem pelo fallback da SPA.
+  // Única exceção: /.well-known/ (security.txt).
+  app.use((req, res, next) => {
+    if (/(^|\/)\.(?!well-known(\/|$))/.test(req.path)) {
+      res.status(404).type('text/plain').send('Not found');
+      return;
+    }
+    next();
+  });
+  app.get('/.well-known/security.txt', (_req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.type('text/plain; charset=utf-8').sendFile(path.join(DIST_DIR, '.well-known', 'security.txt'), (err) => {
+      if (err && !res.headersSent) res.status(404).type('text/plain').send('Not found');
+    });
+  });
+
   // Assets com hash no nome: cache longo e imutável.
   app.use(
     '/assets',
@@ -44,6 +60,12 @@ export async function startServer(): Promise<void> {
   const server = app.listen(env.port, '0.0.0.0', () => {
     console.log(`🚀 Servidor São Cristóvão Burger rodando em http://localhost:${env.port} (${env.nodeEnv})`);
   });
+
+  // Conexões lentas/penduradas (slowloris) não podem ocupar o servidor indefinidamente.
+  server.requestTimeout = 30_000;
+  server.headersTimeout = 15_000;
+  server.keepAliveTimeout = 5_000;
+  server.maxHeadersCount = 50;
 
   // Encerramento gracioso (Cloud Run envia SIGTERM antes de desligar a instância).
   const shutdown = (signal: string) => {

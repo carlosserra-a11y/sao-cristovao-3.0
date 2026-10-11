@@ -8,6 +8,7 @@ for (const key of ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_WHATSAPP_F
   process.env[key] = '';
 }
 process.env.NODE_ENV = 'test';
+process.env.ENABLE_DIRECT_ORDERS = 'true';
 
 const { createApp } = await import('../server/app.ts');
 

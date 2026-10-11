@@ -3,8 +3,21 @@
  * Credenciais da Twilio/Gemini ficam exclusivamente no servidor.
  */
 import { STORE } from '../../shared/storeConfig';
+import { IFOOD_HOME_URL, sanitizeIfoodUrl } from '../../shared/ifood';
 
-/** WhatsApp da loja (só dígitos, com DDI) para o envio direto pelo app do WhatsApp. */
+const configuredIfoodUrl = sanitizeIfoodUrl(import.meta.env.VITE_IFOOD_URL || STORE.ifoodUrl);
+
+/** Link validado da loja no iFood (onde os pedidos são feitos). */
+export const IFOOD_URL: string = configuredIfoodUrl ?? IFOOD_HOME_URL;
+
+/** false = ainda não há link da loja; os botões levam à página inicial do iFood. */
+export const IS_IFOOD_CONFIGURED = configuredIfoodUrl !== null;
+
+if (import.meta.env.DEV && !IS_IFOOD_CONFIGURED) {
+  console.warn('[São Cristóvão] Link do iFood não configurado: defina VITE_IFOOD_URL ou STORE.ifoodUrl em shared/storeConfig.ts.');
+}
+
+/** WhatsApp da loja (só dígitos, com DDI) — canal de dúvidas; os pedidos são feitos no iFood. */
 export const STORE_WHATSAPP_NUMBER = (import.meta.env.VITE_STORE_WHATSAPP_NUMBER || STORE.whatsapp).replace(/\D/g, '');
 
 export const buildWhatsAppLink = (message: string): string =>
